@@ -1,8 +1,8 @@
 <template>
   <div id="top_bg">
     <el-form ref="form">
-      <el-input></el-input>
-      <el-button icon="el-icon-search" circle @click="getKeyList"></el-button>
+      <el-input v-model="searchVal"></el-input>
+      <el-button icon="el-icon-search" circle @click="getKeyList" ></el-button>
     </el-form>
     <wc-swiper v-if="imgList.length" class="s_height">
       <wc-slide v-for="(slide, key) in imgList" :key="key">
@@ -38,7 +38,8 @@
           '/static/img/2.jpg'
         ],
         listData: [],
-        id: ''
+        id: '',
+        searchVal:''
       }
     },
     created() {
@@ -67,34 +68,23 @@
         })
 
       },
-      getKeyList() {
-        //   this.$http.get('/api/index.php?c=WallPaper&a=search&start=0&count=99&kw=摄&start=0&count=99',).then(function(res){
-        //      console.log(res)
-        //         // var datas=res.data.data.data;
-        //         // var _that=this
-        //         // $.each(datas, function(i, val) {
-        //         //   if(i==Number(_that.routerid)){
-        //         //     _that.imgList=val;
-        //         //   }
-        //         // });
-        //     })
-        // }
-        // this.$http.get('http://localhost:3030/api/keyList').then(function(res) {
-          var url = 'http://wallpaper.apc.360.cn/index.php?c=WallPaper&a=search&start=0&count=99&kw=摄&start=0&count=99';
-          this.$http.get(url, {
-            headers: {
-             'Content-Type': 'application/x-www-form-urlencoded',
-             "Access-Control-Allow-Origin":"http://wallpaper.apc.360.cn",
-             "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
-
+      getKeyList(event) {
+          this.$router.push({
+             path: '/search',
+             name: 'search',
+            query: {
+               c: "WallPaperAndroid",
+               a: "search",
+               start:0,
+               count:99,
+               kw: this.searchVal,
             }
-          }).then((response) => {
-            console.log(response)
-            // res.jsonp(response)
-          }).catch((e) => {
-            // console.log(e)
           })
+          // this.$http.post('http://localhost:3030/api/keyList').then(function(res){
+
+          // }.bind(this))
         // })我的生涯一片无悔，想起那天夕阳下的奔跑，那是我逝去的青春
+         //d1b7a3f87c816cd385e85e384273bca2c3e41921
       }
     }
   }

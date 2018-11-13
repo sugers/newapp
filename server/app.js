@@ -3,12 +3,14 @@ var fs = require('fs');
 var path = require('path');
 var bodyParser = require('body-parser');
 var axios = require('axios')
-
+var http = require('http')
+var request = require("request");
 var app = express();
 var routes = express.Router();
 //数据文件
 var getlist = require('../mock/getlist.json');
 var idimg = require('../mock/getIdList.json');
+
 //反向代理
 // var proxy = require("http-proxy-middleware");
 // const apiProxy = proxy('/api', { target: 'http://wallpaper.apc.360.cn',changeOrigin: true });
@@ -42,6 +44,7 @@ app.all('*', function (req, res, next) {
 })
 
 
+
 //访问单页
 app.get('/api/getlist', function (req, res) {
   res.jsonp({
@@ -55,20 +58,72 @@ app.get('/api/idimg', function (req, res) {
     data: idimg
   })
 });
-app.get('/api/keyList', function (req, res) {
-  res.jsonp({
-    errno:0
-  })
-  // var url = 'http://wallpaper.apc.360.cn/index.php?c=WallPaper&a=search&start=0&count=99&kw=摄&start=0&count=99';
-  // axios.get(url, {
-  //   headers: {
-  //     referer: 'http://wallpaper.apc.360.cn/',
-  //     host: 'wallpaper.apc.360.cn/'
+
+//爬取数据
+
+app.post('/api/keyList', function (req, res) {
+  var kw = req.body.kw;
+  var geturl="http://wallpaper.apc.360.cn/index.php?c=WallPaper&a=search&start=0&count=99&kw="+kw;
+  var options = {
+    method: 'GET',
+    url: geturl,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36'
+    }
+  };
+
+  request(options, function (error, response, body) {
+    if (error) console.log(error);
+
+    fs.writeFile("../mock/search.json", body, function (err) {
+        if (err) throw err;
+        console.log("File Saved !"); //文件被保存
+      })
+    // console.log(response)
+    // console.log(body);
+  });
+
+
+  // var url="http://wallpaper.apc.360.cn/index.php?c=WallPaper&a=search&start=0&count=99&kw="+kw+"&start=0&count=99
+  // http.get({
+  //       hostname: 'wallpaper.apc.360.cn',
+  //       path: "/index.php?c=WallPaper&a=search&start=0&count=99&kw="+kw+"&start=0&count=99",
+  //       method: 'GET',
+  //       headers:{
+  //           'User-Agent': "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36"
+  //       }
+  //   },
+  //   res => {
+  //     var size = 0;
+  //     var chunks = [];
+  //     res.on('data', data => {
+  //       size += data.length;
+  //       chunks.push(data);
+  //     })
+  //     res.on('end', function () {
+  //       var data = Buffer.concat(chunks, size);
+  //       //写入文件
+  //       fs.writeFile("../mock/search.json", data, function (err) {
+  //         if (err) throw err;
+  //         console.log("File Saved !"); //文件被保存
+  //       })
+  //     });
   //   }
-  // }).then((response) => {
-  //   res.jsonp(response)
-  // }).catch((e) => {
-  //   console.log(e)
-  // })
-})
+  // )
+
+  res.jsonp({
+    errno: 0,
+    // data:body
+  })
+});
+
+
+app.get('/api/keyList', function (req, res) {
+  var search = require('../mock/search.json');
+  res.jsonp({
+    errno: 0,
+    data: search
+  })
+});
+
 app.listen(3030);
